@@ -1,0 +1,5 @@
+rootdir_modulename = File.expand_path(File.dirname(__FILE__)).gsub(/(.*\/)/, '').capitalize
+strip_version_name = lambda { rootdir_modulename.gsub!(/-\d.*/, '') }.call
+mod = Object.const_set(rootdir_modulename, Module.new)
+mod::VERSION = [0,0,1]
+
