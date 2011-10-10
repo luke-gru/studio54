@@ -1,6 +1,34 @@
 class LazyController < Studio54::Base
+    include ::Studio54::Config::Environment
 
+  class << self
+    # all models are not required by default
+    def require_models(*models)
+      models.each do |m|
+        require File.join(MODELSDIR, m.to_s)
+      end
+    end
+    alias_method :require_model, :require_models
+
+    def require_all_models
+      Dir.glob(MODELSDIR + '/.*').each do |m_file|
+        require m_file
+      end
+    end
+
+    def app_class_eval(&block)
+      self.app_class.class_eval &block
+    end
+
+    def app_instance_eval(&block)
+      self.app_instance.instance_eval &block
+    end
+
+  end
+
+  # included in Dancefloor
   module Routable
+    # Db is a constant in Studio54 scope
     include ::Studio54
     include ::Studio54::Config::Environment
 

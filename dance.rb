@@ -6,8 +6,10 @@ class Studio54::Dancefloor
 
   get '/' do
     context = controller :users, :index
-    response["Cache-Control"] = "max-age=300, public"
-    erb :index, {}, context
+    # response["Cache-Control"] = "max-age=2, public"
+    response.body = erb :index, {}, context
+    response["Content-Length"] = response.body.inject(0) {|a, l| a+=l.length }
+    [200, response.headers, response.body]
   end
 
 end

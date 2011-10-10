@@ -16,7 +16,7 @@ class Studio54::Dancefloor < Sinatra::Base
   set :root, File.join(File.expand_path(File.dirname(__FILE__)), '..')
   ### Static Files ###
   # serve static files
-  set :static, false
+  set :static, true
   # static file directory, served_from => :views.
   # To override Sinatra's wrapping of rack/static, disable
   # set :static and set :public_folder and explicity use
