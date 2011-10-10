@@ -1,4 +1,4 @@
-class LazyRecord
+class LazyRecord < Studio54::Base
   include ::Studio54
   RecordNotFound = Class.new(::StandardError)
 

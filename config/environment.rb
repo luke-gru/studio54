@@ -11,10 +11,6 @@ module Studio54
       CONTROLLERSDIR = File.join(APPDIR, "controllers")
 
       $:.unshift(ROOTDIR)   unless $:.include? ROOTDIR
-      $:.unshift(APPDIR)    unless $:.include? APPDIR
-      $:.unshift(LIBDIR)    unless $:.include? LIBDIR
-      $:.unshift(CONFIGDIR) unless $:.include? CONFIGDIR
-
     end
   end
 end

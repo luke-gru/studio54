@@ -1,4 +1,4 @@
-class LazyController
+class LazyController < Studio54::Base
 
   module Routable
     include ::Studio54
@@ -9,14 +9,14 @@ class LazyController
       require File.join(MODELSDIR, c_name[0...-1])
       begin
       controller = self.class.const_get("#{c_name.capitalize}Controller")
-      action = controller.instance_method c_action
       controller_inst = controller.new
-      action.bind(controller_inst).call
+      controller_inst.__send__(c_action)
       {}.tap do |h|
         controller_inst.instance_variables.each do |ivar|
           controller_inst.instance_eval do
-            # strip the @ from the instance variable
-            h[ivar.to_s[1..-1].intern] = instance_variable_get ivar
+            # @user = _user in templates
+            # strip the @ from the instance variable and add '_'
+            h[("_" + ivar.to_s[1..-1]).intern] = instance_variable_get ivar
           end
         end
       end

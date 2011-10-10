@@ -1,2 +1,5 @@
 *.gem
 *.html.md
+rack/cache/body/*
+rack/cache/meta/*
+

@@ -6,14 +6,7 @@ module Studio54
     cattr_accessor :pass
     cattr_accessor :schema
     cattr_accessor :type
-
     cattr_accessor :conn
-
-    class << self
-      def query(stmt)
-        self.conn.query(stmt)
-      end
-    end
 
     self.host   = 'localhost'
     self.user   = 'root'
@@ -21,10 +14,22 @@ module Studio54
     self.schema = 'test'
     self.type   = 'mysql'
 
+    # define the basic query interface method,
+    # Db.query
+    if self.type == 'mysql'
+      class << self
+        def query(stmt)
+          self.conn.query(stmt)
+        end
+      end
+    else
+    end
+
+
     case self.type
-    when "mysql"
+    when 'mysql'
       require "mysql"
-    when "postgresql"
+    when 'postgresql'
       require "postgresql"
     else
       raise "Unrecognized database type #{self.type}"
