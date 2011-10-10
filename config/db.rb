@@ -33,16 +33,3 @@ module Studio54
   end
 end
 
-module Studio54::Config
-  begin
-    # connect to the MySQL server
-    Db = ::Studio54::Db
-    Db.conn = ::Mysql.real_connect(Db.host, Db.user, Db.pass, Db.schema)
-  rescue Mysql::Error => e
-    puts "Error code: #{e.errno}"
-    puts "Error message: #{e.error}"
-    puts "Error SQLSTATE: #{e.sqlstate}" if e.respond_to? :sqlstate
-  ensure
-  end
-end
-
