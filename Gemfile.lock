@@ -12,6 +12,8 @@ GEM
       rack (>= 0.4)
     rack-protection (1.1.4)
       rack
+    rack-test (0.6.1)
+      rack (>= 1.0)
     shotgun (0.9)
       rack (>= 1.0)
     sinatra (1.3.1)
@@ -32,6 +34,7 @@ DEPENDENCIES
   mysql
   rack
   rack-cache
+  rack-test
   shotgun
   sinatra
   thin
