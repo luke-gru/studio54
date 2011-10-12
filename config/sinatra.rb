@@ -3,7 +3,7 @@ class Studio54::Dancefloor < Sinatra::Base
   set :app_file, __FILE__
 
   configure :development do
-    set :server, %w[thin webrick]
+    set :server, %w[thin mongrel webrick]
     set :dump_errors, false
     set :shotgun, false
   end

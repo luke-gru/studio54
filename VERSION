@@ -1,7 +1,8 @@
-#/* vim: set ts=2 sw=2 tw=78 ft=ruby :*/
+# vim: set ts=2 sw=2 syntax=ruby
 
 rootdir_modulename = File.expand_path(File.dirname(__FILE__)).gsub(/(.*\/)/, '').capitalize
-strip_version_name = rootdir_modulename.gsub(/-\d.*/, '')
+# strip version name (gems)
+rootdir_modulename.gsub!(/-\d.*/, '')
 mod = Object.const_set(rootdir_modulename, Module.new)
 mod::VERSION = [0,0,2]
 
