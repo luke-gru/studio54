@@ -8,8 +8,8 @@ class Studio54::Dancefloor
     @context = controller :users, :index
     # response["Cache-Control"] = "max-age=2, public"
     response.body = erb :index, {}, @context
-    response["Content-Length"] = response.body.inject(0) {|a, l| a+=l.length }
-    [200, response.headers, response.body]
+    response.set_content_length!
+    response.send(200)
   end
 
 end

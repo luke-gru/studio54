@@ -24,4 +24,5 @@ require 'lib/lazy_controller'
 require 'config/db'
 require 'lib/before_filters'
 require 'lib/after_filters'
+require 'lib/helpers'
 
