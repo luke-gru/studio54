@@ -35,9 +35,8 @@ class LazyRecord < Studio54::Base
     end
   end
 
-  # only works for mysql
   def self.test_resultset(res)
-    if res.num_rows.zero?
+    if res.empty?
       raise RecordNotFound.new "Bad resultset #{res}"
     end
   end

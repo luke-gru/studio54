@@ -14,8 +14,7 @@ module Studio54
     self.schema = 'test'
     self.type   = 'mysql'
 
-    # define the basic query interface method,
-    # Db.query
+    # The basic query interface method: Db.query(statement)
     if self.type == 'mysql'
       class << self
         def query(stmt)
@@ -38,10 +37,17 @@ module Studio54
   end
 end
 
-class Mysql
-  class Result
-    def empty
+# The basic resultset interface methods
+case Studio54::Db.type
+when 'mysql'
+  # should really be a module
+  class Mysql
+    class Result
+      def empty?
+        self.num_rows.zero?
+      end
     end
   end
+else
 end
 
