@@ -1,16 +1,80 @@
 class LazyRecord < Studio54::Base
   include ::Studio54
-  RecordNotFound = Class.new(StandardError)
+  RecordNotFound      = Class.new(StandardError)
+  AssociationNotFound = Class.new(StandardError)
 
-  def self.attr_accessor *fields
+  # used to keep track of all table attributes
+  def self.tbl_attr_accessor *fields
     fields.each do |f|
       self.attributes << f unless self.attributes.include? f
     end
-    super *fields
+    self.__send__ :attr_accessor, *fields
   end
 
   def self.attributes
     @attributes ||= []
+  end
+
+  def self.nested_attributes
+    @nested_attributes ||= []
+  end
+
+  def self.belongs_to_attributes
+    @belongs_to_attributes ||= []
+  end
+
+  # Barely does anything, just defines the accessor(s)
+  # and makes sure the other model includes an appropriate
+  # association as well. These methods are mainly for
+  # documentation.
+  #
+  # The name of the model can be made explicit if it's different
+  # from the default (taking off the trailing 's')
+  # has_many {:tags => TagsModel}, {:comments => CommentsModel}
+  def self.has_many *models
+    models.each do |m|
+      if m.is_a? Symbol
+        model_string = m.to_s[0...-1]
+        self.require_model model_string
+        model_klass = Object.const_get m.to_s[0...-1].camelize
+        ivar_name = m
+      elsif m.is_a? Hash
+        v = nil
+        v_sym_name = nil
+        m.each do |k, v|
+          model_string = v.name.tableize
+          self.require_model model_string
+          model_klass  = Object.const_get v.name
+          ivar_name = v_sym_name = model_string.intern
+        end
+      end
+
+      # Make sure associated model #belongs_to this class.
+      # The associated model is required automatically if
+      # not already required manually.
+      unless model_klass.belongs_to_attributes.include? self.name.
+        tableize.intern
+        raise AssociationNotFound.new "#{model_klass} doesn't #belong_to
+      #{self.name}"
+      end
+
+      class_eval do
+        define_method ivar_name do
+          instance_variable_get "@#{ivar_name}" || []
+        end
+        attr_writer ivar_name
+        self.nested_attributes << ivar_name unless
+          self.nested_attributes.include? ivar_name
+      end
+    end
+  end
+
+  # barely does anything, just works with has_many
+  def self.belongs_to *models
+    models.each do |m|
+      self.belongs_to_attributes << m unless
+        self.belongs_to_attributes.include? m
+    end
   end
 
   def initialize(params=nil)
@@ -67,7 +131,6 @@ class LazyRecord < Studio54::Base
   end
   alias_method :build, :build_from_params!
 
-  # mysql specific: affected rows
   def insert(rows=1)
     sql = "INSERT INTO #{self.class.table_name} ("
     fields = self.class.attributes
@@ -121,7 +184,7 @@ class LazyRecord < Studio54::Base
     when 'OR'
       sql = sql[0...-3]
     else
-      raise "multiple conditions in #{__method__} must be one of AND, OR"
+      raise "multiple condition in #{__method__} must be one of AND, OR"
     end
     res = Db.query(sql)
     test_resultset res

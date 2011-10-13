@@ -46,6 +46,8 @@ when 'mysql'
       def empty?
         self.num_rows.zero?
       end
+      # Mysql library already defines Result#affected_rows.
+      # All other dbms gems should adhere to this interface.
     end
   end
 else

@@ -1,21 +1,6 @@
 class LazyController < Studio54::Base
-    include ::Studio54::Config::Environment
 
   class << self
-    # All models are not required by default. These are helper
-    # methods to aid doing it manually
-    def require_models(*models)
-      models.each do |m|
-        require File.join(MODELSDIR, m.to_s)
-      end
-    end
-    alias_method :require_model, :require_models
-
-    def require_all_models
-      Dir.glob(MODELSDIR + '/.*').each do |m_file|
-        require m_file
-      end
-    end
 
     def app_class_eval(&block)
       self.app_class.class_eval &block
