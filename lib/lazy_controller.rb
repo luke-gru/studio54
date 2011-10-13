@@ -37,22 +37,24 @@ class LazyController < Studio54::Base
       require File.join(CONTROLLERSDIR, "#{c_name}_controller")
       require File.join(MODELSDIR, c_name[0...-1])
       begin
-      controller = self.class.const_get("#{c_name.capitalize}Controller")
-      controller_inst = controller.new
-      if params.blank?
-        controller_inst.__send__(c_action)
-      else
-        controller_inst.__send__(c_action, params)
-      end
-      {}.tap do |h|
+        controller = self.class.const_get("#{c_name.capitalize}Controller")
+        controller_inst = controller.new
+        if params.blank?
+          controller_inst.__send__(c_action)
+        else
+          controller_inst.__send__(c_action, params)
+        end
         controller_inst.instance_variables.each do |ivar|
+          # establish non block-local scope
+          ivar_value = nil
           controller_inst.instance_eval do
             # @user = _user in templates
             # strip the @ from the instance variable and add '_'
-            h[("_" + ivar.to_s[1..-1]).intern] = instance_variable_get ivar
+            ivar_value = instance_variable_get ivar
           end
+          # self here is the instance of the application
+          instance_variable_set ivar, ivar_value
         end
-      end
       ensure
         Db.conn.close if Db.conn
       end

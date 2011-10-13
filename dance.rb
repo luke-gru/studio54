@@ -5,23 +5,23 @@ class Studio54::Dancefloor
   include LazyController::Routable
 
   get '/' do
-    @context = controller :users, :index
+    controller :users, :index
     # response["Cache-Control"] = "max-age=2, public"
-    response.body = erb :index, {}, @context
+    response.body = erb :index, {}
     response.set_content_length!
     response.send(200)
   end
 
   get '/test_find_by' do
-    @context = controller :users, :find_by
-    response.body = erb :test_find_by, {}, @context
+    controller :users, :find_by
+    response.body = erb :test_find_by, {}
     response.set_content_length!
     response.send 200
   end
 
   get '/form' do
-    @context = controller :users, :new
-    response.body = erb :form, {}, @context
+    controller :users, :new
+    response.body = erb :form, {}
     response.set_content_length!
     response.send
   end
