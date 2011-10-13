@@ -4,6 +4,12 @@ class Studio54::Dancefloor
     def logger
       request.logger
     end
+
+    def flash(hash)
+      self.class.instance_eval do
+        @flash = hash
+      end
+    end
   end
 
 end

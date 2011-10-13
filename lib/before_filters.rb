@@ -8,6 +8,18 @@ module Studio54
       # wraps Dancefloor instance scope (request) for convenience
       Base.app_instance = self
 
+      # flash stuff
+      self.class.instance_eval do
+        unless @flash.nil?
+          @flash.each do |k,v|
+            Base.app_instance.instance_eval do
+              @flash_content = "<div id=#{k}>#{v}</div>"
+            end
+          end
+          @flash = nil
+        end
+      end
+
       # if using shotgun, create a custom log format
       !settings.shotgun || begin
         req = request
