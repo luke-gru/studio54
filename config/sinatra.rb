@@ -21,10 +21,13 @@ class Studio54::Dancefloor < Sinatra::Base
   # To override Sinatra's wrapping of rack/static, disable
   # set :static and set :public_folder and explicity use
   # Rack::Static from config.ru.
-  ##
   set :public_folder, Proc.new { File.join(root, 'static') }
+  ###
   # template files directory
   set :views,  Proc.new { File.join(root, 'public') }
+  # whether or not to use layout.* in view folder
+  set :erb, :layout => true
+
   # enable sessions
   set :sessions, true
   # using _method (PUT, DELETE)
