@@ -12,5 +12,24 @@ class Studio54::Dancefloor
     response.send(200)
   end
 
+  get '/test_find_by' do
+    @context = controller :users, :find_by
+    response.body = erb :test_find_by, {}, @context
+    response.set_content_length!
+    response.send 200
+  end
+
+  get '/form' do
+    @context = controller :users, :new
+    response.body = erb :form, {}, @context
+    response.set_content_length!
+    response.send
+  end
+
+  post '/create_user' do
+    controller :users, :create, params
+    redirect to('/')
+  end
+
 end
 

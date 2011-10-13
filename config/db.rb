@@ -30,11 +30,18 @@ module Studio54
     when 'mysql'
       require "mysql"
     when 'postgresql'
-      require "postgresql"
+      require "postgres"
     else
       raise "Unrecognized database type #{self.type}"
     end
 
+  end
+end
+
+class Mysql
+  class Result
+    def empty
+    end
   end
 end
 

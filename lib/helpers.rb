@@ -9,8 +9,8 @@ class Studio54::Dancefloor
 end
 
 module Sinatra
-
   class Response
+
     def set_content_length!
       self["Content-Length"] =
         self.body.inject(0) {|a, l| a += l.length}
@@ -19,7 +19,7 @@ module Sinatra
     def send(status=200)
       [status, self.headers, self.body]
     end
-  end
 
+  end
 end
 

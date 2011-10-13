@@ -5,7 +5,7 @@ module Studio54
 
     before do
       load 'config/db_connect.rb'
-      # wraps Dancefloor instance (request) scope for convenience
+      # wraps Dancefloor instance scope (request) for convenience
       Base.app_instance = self
 
       # if using shotgun, create a custom log format

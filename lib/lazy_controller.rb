@@ -2,7 +2,8 @@ class LazyController < Studio54::Base
     include ::Studio54::Config::Environment
 
   class << self
-    # all models are not required by default
+    # All models are not required by default. These are helper
+    # methods to aid doing it manually
     def require_models(*models)
       models.each do |m|
         require File.join(MODELSDIR, m.to_s)
@@ -32,13 +33,17 @@ class LazyController < Studio54::Base
     include ::Studio54
     include ::Studio54::Config::Environment
 
-    def controller(c_name, c_action)
+    def controller(c_name, c_action, params={})
       require File.join(CONTROLLERSDIR, "#{c_name}_controller")
       require File.join(MODELSDIR, c_name[0...-1])
       begin
       controller = self.class.const_get("#{c_name.capitalize}Controller")
       controller_inst = controller.new
-      controller_inst.__send__(c_action)
+      if params.blank?
+        controller_inst.__send__(c_action)
+      else
+        controller_inst.__send__(c_action, params)
+      end
       {}.tap do |h|
         controller_inst.instance_variables.each do |ivar|
           controller_inst.instance_eval do

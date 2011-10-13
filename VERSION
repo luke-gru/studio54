@@ -1,4 +1,4 @@
-# vim: set ts=2 sw=2 syntax=ruby
+#// vim: set ts=2 sw=2 syntax=ruby ://#
 
 rootdir_modulename = File.expand_path(File.dirname(__FILE__)).gsub(/(.*\/)/, '').capitalize
 # strip version name (gems)
