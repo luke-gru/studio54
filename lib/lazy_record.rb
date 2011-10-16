@@ -4,8 +4,11 @@ class LazyRecord < Studio54::Base
   AssociationNotFound = Class.new(StandardError)
 
   def self.inherited(base)
-    base.__send__(:include, ::Studio54)
-    base.__send__(:cattr_accessor, :primary_key)
+    base.class_eval do
+      cattr_accessor :primary_key
+      include ::Studio54
+      include ActiveSupport::Callbacks
+    end
   end
 
   # if parameters are given, builds the model
@@ -109,7 +112,7 @@ class LazyRecord < Studio54::Base
 
   public
 
-  # internal use only
+  # meant for internal use
   def build_from_params!(params)
     params.each do |k, v|
       self.__send__("#{k}=".intern, v)
@@ -118,7 +121,7 @@ class LazyRecord < Studio54::Base
 
   private
 
-  # internal use only
+  # meant for internal use
   def self.test_resultset(res)
     if res.empty?
       raise RecordNotFound.new "Bad resultset #{res}"
@@ -156,7 +159,6 @@ class LazyRecord < Studio54::Base
     end
   end
 
-
   # id is the primary key of the table, and does
   # not need to be named 'id' in the table itself
   # TODO take into account other dbms's, this only
@@ -167,7 +169,6 @@ class LazyRecord < Studio54::Base
     test_resultset res
     build_from res
   end
-
 
   def self.find_by(hash, options={})
     opts = {:composite => 'AND'}.merge options
@@ -198,7 +199,7 @@ class LazyRecord < Studio54::Base
 
   private
 
-  # internal use only
+  # meant for internal use
   def self.build_from(resultset)
     model_instances = [].tap do |m|
       resultset.each_hash do |h|

@@ -34,9 +34,12 @@ class Studio54::Dancefloor
   end
 
   post '/create_user' do
-    controller :users, :create, params
-    flash :notice => "you created user #{params[:user][:name]}"
-    redirect to('/')
+    res = controller :users, :create, params
+    if res
+      flash :notice => "you created user #{@user.name}"
+      redirect to('/')
+    else
+    end
   end
 
 end
