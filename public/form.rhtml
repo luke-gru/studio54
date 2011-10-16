@@ -1,3 +1,8 @@
+<% unless @flash_errors.nil? %>
+  <% @flash_errors[:errors][:user].each do |m| %>
+    <%= m %>
+  <% end %>
+<% end %>
 <form method="post" action="/create_user">
   Name:<input type="text" name="user[name]" /><br />
   Age:<input type="text" name="user[age]" /><br />

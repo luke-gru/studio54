@@ -24,7 +24,7 @@ class LazyController < Studio54::Base
       begin
         controller = self.class.const_get("#{c_name.capitalize}Controller")
         controller_inst = controller.new
-        if params.blank?
+        result = if params.blank?
           controller_inst.__send__(c_action)
         else
           controller_inst.__send__(c_action, params)
@@ -41,6 +41,7 @@ class LazyController < Studio54::Base
       ensure
         Db.conn.close if Db.conn
       end
+      result
     end
 
   end

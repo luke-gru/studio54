@@ -6,6 +6,12 @@ gem "sinatra"
 # Check config/app_tie to see which active_support files are required.
 # Note: many required files require other active_support files in turn.
 gem "active_support"
+# note, ActiveModel::Callbacks is not extended by default, unlike
+# ActiveSupport::Callbacks.
+gem "activemodel"
+
+# optional => see config/options
+gem "builder"
 
 # dbms
 gem "mysql"

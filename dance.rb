@@ -39,6 +39,8 @@ class Studio54::Dancefloor
       flash :notice => "you created user #{@user.name}"
       redirect to('/')
     else
+      flash :errors => @user.errors
+      redirect to('/form')
     end
   end
 

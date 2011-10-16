@@ -14,6 +14,7 @@ require "active_support/core_ext/string/behavior"
 require "active_support/core_ext/string/filters"
 require "active_support/core_ext/string/inflections"
 require "active_support/callbacks"
+require "active_model"
 
 # environment file
 require File.join(File.expand_path(File.dirname(__FILE__)), "..", "config/environment")

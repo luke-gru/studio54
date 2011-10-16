@@ -3,9 +3,16 @@ class User < LazyRecord
   attr_primary :id
   tbl_attr_accessor :name, :age
 
+  # validations
+
+  validate :name_not_blank
+  def name_not_blank
+    errors.add(:user, "Name can't be blank") if self.name.blank?
+  end
+
   define_callbacks :save
   set_callback :save, :before do |object|
-    object.name = "jeff"
+    object.name = ""
     object.age = 60
   end
 

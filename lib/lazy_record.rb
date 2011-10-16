@@ -6,8 +6,14 @@ class LazyRecord < Studio54::Base
   def self.inherited(base)
     base.class_eval do
       cattr_accessor :primary_key
+      attr_reader :errors
       include ::Studio54
       include ActiveSupport::Callbacks
+      include ActiveModel::Callbacks
+      include ActiveModel::Serialization
+      extend  ActiveModel::Naming
+      extend  ActiveModel::Translation
+      include ActiveModel::Validations
     end
   end
 
@@ -18,6 +24,7 @@ class LazyRecord < Studio54::Base
     unless params.nil?
       self.build_from_params!(params)
     end
+    @errors = ActiveModel::Errors.new(self)
   end
 
   # used to keep track of all table attributes
@@ -139,6 +146,9 @@ class LazyRecord < Studio54::Base
 
   # save current model instance into database
   def save
+    unless self.valid?
+      return false
+    end
     sql = "INSERT INTO #{self.class.table_name} ("
     fields = self.class.attributes
     sql += fields.join(', ') + ') VALUES ('

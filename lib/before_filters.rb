@@ -13,7 +13,11 @@ module Studio54
         unless @flash.nil?
           @flash.each do |k,v|
             Base.app_instance.instance_eval do
-              @flash_content = "<div id=#{k}>#{v}</div>"
+              if k != :errors
+                @flash_content = "<div id=#{k}>#{v}</div>"
+              else
+                @flash_errors = {k => v}
+              end
             end
           end
           @flash = nil
