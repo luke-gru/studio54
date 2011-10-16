@@ -10,7 +10,7 @@ gem "active_support"
 # ActiveSupport::Callbacks.
 gem "activemodel"
 
-# optional => see config/options
+# optional, only need it if serving xml
 gem "builder"
 
 # dbms
