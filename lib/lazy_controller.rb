@@ -33,8 +33,6 @@ class LazyController < Studio54::Base
           # establish non block-local scope
           ivar_value = nil
           controller_inst.instance_eval do
-            # @user = _user in templates
-            # strip the @ from the instance variable and add '_'
             ivar_value = instance_variable_get ivar
           end
           # self here is the instance of the application

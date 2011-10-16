@@ -4,8 +4,12 @@ class UsersController < LazyController
     @user = User.find(1)
   end
 
+  def all
+    @users = User.all
+  end
+
   def find_by
-    @user = User.find_by('OR', :name => "luke", :id => 5)
+    @user = User.find_by({:name => "andrew", :id => 5}, :composite => 'OR')
   end
 
   def new
@@ -14,9 +18,7 @@ class UsersController < LazyController
 
   def create(params)
     @user = User.new params[:user]
-    if @user.save
-    else
-    end
+    @user.save
   end
 
 end

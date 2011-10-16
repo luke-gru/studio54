@@ -48,7 +48,6 @@ class LazyRecord < Studio54::Base
           ivar_name = v_sym_name = model_string.intern
         end
       end
-
       # Make sure associated model #belongs_to this class.
       # The associated model is required automatically if
       # not already required manually.
@@ -57,7 +56,6 @@ class LazyRecord < Studio54::Base
         raise AssociationNotFound.new "#{model_klass} doesn't #belong_to
       #{self.name}"
       end
-
       class_eval do
         define_method ivar_name do
           instance_variable_get "@#{ivar_name}" || []
@@ -67,6 +65,10 @@ class LazyRecord < Studio54::Base
           self.nested_attributes.include? ivar_name
       end
     end
+  end
+  class << self
+    # has_one has the same implementation as has_many
+    alias_method :has_one, :has_many
   end
 
   # barely does anything, just works with has_many
@@ -105,33 +107,14 @@ class LazyRecord < Studio54::Base
     end
   end
 
-  # TODO take into account fully qualified tables
-  def build_from_resultset!(res)
-    fields = [].tap do |a|
-      res.fetch_fields.each do |field|
-        a << field.name
-      end
-    end
-    params = {}.tap do |p|
-      res.each_hash do |row|
-        fields.each do |field|
-          p[field] = row[field]
-          #self.__send__("#{field}=".intern, row[field])
-        end
-      end
-    end
-    self.build_from_params!(params)
-    self
-  end
-
   def build_from_params!(params)
     params.each do |k, v|
       self.__send__("#{k}=".intern, v)
     end
   end
-  alias_method :build, :build_from_params!
 
-  def insert(rows=1)
+  # save current model instance into database
+  def save
     sql = "INSERT INTO #{self.class.table_name} ("
     fields = self.class.attributes
     sql += fields.join(', ') + ') VALUES ('
@@ -145,13 +128,12 @@ class LazyRecord < Studio54::Base
     end
     sql = sql[0...-2] + ');'
     res = Db.query(sql)
-    if res.nil? or res.affected_rows != rows
-      return false
+    if res.nil? or res.affected_rows != 1
+      false
     else
       true
     end
   end
-  alias_method :save, :insert
 
   # associated table name, by default is just to add an 's' to the model
   # name
@@ -168,28 +150,47 @@ class LazyRecord < Studio54::Base
     sql = "SELECT * FROM #{self.table_name} WHERE #{self.primary_key} = #{id};"
     res = Db.query(sql)
     test_resultset res
-    model = self.new
-    model.build_from_resultset!(res)
+    self.build_from res
   end
 
 
-  def self.find_by(mult='AND', hash)
+  def self.find_by(hash, options={})
+    opts = {:composite => 'AND'}.merge options
+    composite = opts[:composite]
     sql = "SELECT * FROM #{self.table_name} WHERE "
     hash.each do |k, v|
-      sql += "#{k} = '#{v}' #{mult} "
+      sql += "#{k} = '#{v}' #{composite} "
     end
-    case mult
+    case composite
     when 'AND'
       sql = sql[0...-4]
     when 'OR'
       sql = sql[0...-3]
     else
-      raise "multiple condition in #{__method__} must be one of AND, OR"
+      raise "composite sql condition in #{__method__} must be one of AND, OR"
     end
     res = Db.query(sql)
     test_resultset res
-    model = self.new
-    model.build_from_resultset!(res)
+    self.build_from res
+  end
+
+  def self.build_from(resultset)
+    model_instances = [].tap do |m|
+      resultset.each_hash do |h|
+        model = self.new
+        model.build_from_params! h
+        m << model
+      end
+    end
+    model_instances.length == 1 ? model_instances[0] :
+    model_instances
+  end
+
+  def self.all
+    sql = "SELECT * FROM #{self.table_name};"
+    res = Db.query(sql)
+    test_resultset res
+    self.build_from res
   end
 
   class << self
