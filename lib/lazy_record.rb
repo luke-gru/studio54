@@ -3,6 +3,20 @@ class LazyRecord < Studio54::Base
   RecordNotFound      = Class.new(StandardError)
   AssociationNotFound = Class.new(StandardError)
 
+  def self.inherited(base)
+    base.__send__(:include, ::Studio54)
+    base.__send__(:cattr_accessor, :primary_key)
+  end
+
+  # if parameters are given, builds the model
+  # object with the attributes from the given
+  # parameters
+  def initialize(params=nil)
+    unless params.nil?
+      self.build_from_params!(params)
+    end
+  end
+
   # used to keep track of all table attributes
   def self.tbl_attr_accessor *fields
     fields.each do |f|
@@ -22,6 +36,8 @@ class LazyRecord < Studio54::Base
   def self.belongs_to_attributes
     @belongs_to_attributes ||= []
   end
+
+  private
 
   # Barely does anything, just defines the accessor(s)
   # and makes sure the other model includes an appropriate
@@ -66,6 +82,7 @@ class LazyRecord < Studio54::Base
       end
     end
   end
+
   class << self
     # has_one has the same implementation as has_many
     alias_method :has_one, :has_many
@@ -79,17 +96,6 @@ class LazyRecord < Studio54::Base
     end
   end
 
-  def initialize(params=nil)
-    unless params.nil?
-      self.build_from_params!(params)
-    end
-  end
-
-  def self.inherited(base)
-    base.__send__(:include, ::Studio54)
-    base.__send__(:cattr_accessor, :primary_key)
-  end
-
   def self.attr_primary(*fields)
     if fields.length == 1
       self.primary_key = fields[0]
@@ -101,17 +107,32 @@ class LazyRecord < Studio54::Base
     end
   end
 
+  public
+
+  # internal use only
+  def build_from_params!(params)
+    params.each do |k, v|
+      self.__send__("#{k}=".intern, v)
+    end
+  end
+
+  private
+
+  # internal use only
   def self.test_resultset(res)
     if res.empty?
       raise RecordNotFound.new "Bad resultset #{res}"
     end
   end
 
-  def build_from_params!(params)
-    params.each do |k, v|
-      self.__send__("#{k}=".intern, v)
-    end
+  # associated table name, by default is just to add an 's' to the model
+  # name
+  def self.assoc_table_name=( tblname=self.name.downcase+'s' )
+    self.__send__ :cattr_accessor, :table_name
+    self.table_name = tblname.to_s
   end
+
+  public
 
   # save current model instance into database
   def save
@@ -135,12 +156,6 @@ class LazyRecord < Studio54::Base
     end
   end
 
-  # associated table name, by default is just to add an 's' to the model
-  # name
-  def self.assoc_table_name=( tblname=self.name.downcase+'s' )
-    self.__send__ :cattr_accessor, :table_name
-    self.table_name = tblname.to_s
-  end
 
   # id is the primary key of the table, and does
   # not need to be named 'id' in the table itself
@@ -150,7 +165,7 @@ class LazyRecord < Studio54::Base
     sql = "SELECT * FROM #{self.table_name} WHERE #{self.primary_key} = #{id};"
     res = Db.query(sql)
     test_resultset res
-    self.build_from res
+    build_from res
   end
 
 
@@ -171,9 +186,19 @@ class LazyRecord < Studio54::Base
     end
     res = Db.query(sql)
     test_resultset res
-    self.build_from res
+    build_from res
   end
 
+  def self.all
+    sql = "SELECT * FROM #{self.table_name};"
+    res = Db.query(sql)
+    test_resultset res
+    build_from res
+  end
+
+  private
+
+  # internal use only
   def self.build_from(resultset)
     model_instances = [].tap do |m|
       resultset.each_hash do |h|
@@ -186,12 +211,7 @@ class LazyRecord < Studio54::Base
     model_instances
   end
 
-  def self.all
-    sql = "SELECT * FROM #{self.table_name};"
-    res = Db.query(sql)
-    test_resultset res
-    self.build_from res
-  end
+  public
 
   class << self
     def method_missing(method, *args, &block)
