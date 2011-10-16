@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+# vim: set ts=2 sw=2 tw=78 ft=ruby :#
+
+require 'optparse'
+require 'ostruct'
+require 'fileutils'
+require File.join(File.expand_path(File.dirname(__FILE__)), "..", "config/environment")
+
+module Studio54
+  include FileUtils
+
+include Environment
+require File.join(ROOTDIR, 'VERSION')
+
+  class Options
+
+    def self.parse(args)
+      options = OpenStruct.new
+
+      opts_saved = OptionParser.new do |opts|
+        opts.banner = "Usage: studio54 [options]"
+        opts.separator ""
+        opts.separator "Specific options:"
+
+        opts.on("-e", "--enter PROJECT_NAME", "Create studio54 project") do |name|
+          options.enter = true
+          options.project_name = name
+        end
+
+        opts.on_tail("-v", "--version", "Show hubeye version") do
+          puts Studio54::VERSION.join('.')
+          exit
+        end
+
+        opts.on_tail("-h", "--help", "Show this message") do
+          puts opts
+          exit
+        end
+      end
+
+      opts_saved.parse!(args)
+      options
+    end # end of Options::parse
+  end # end of class
+
+  options = Options.parse!(ARGV)
+  if options.enter
+    mkdir File.join(File.expand_path('.'), options.project_name)
+    #Dir.glob(ROOTDIR + '/*').each do |f| cp f unless f =~ exclude_dirs end
+  end
+end # end of module
+
