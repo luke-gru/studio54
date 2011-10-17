@@ -5,12 +5,10 @@ require 'optparse'
 require 'ostruct'
 require 'fileutils'
 require File.join(File.expand_path(File.dirname(__FILE__)), "..", "config/environment")
+include Studio54::Config::Environment
+load File.join(ROOTDIR, 'VERSION')
 
 module Studio54
-  include FileUtils
-
-include Environment
-require File.join(ROOTDIR, 'VERSION')
 
   class Options
 
@@ -27,7 +25,7 @@ require File.join(ROOTDIR, 'VERSION')
           options.project_name = name
         end
 
-        opts.on_tail("-v", "--version", "Show hubeye version") do
+        opts.on_tail("-v", "--version", "Show Studio54 version") do
           puts Studio54::VERSION.join('.')
           exit
         end
@@ -43,10 +41,12 @@ require File.join(ROOTDIR, 'VERSION')
     end # end of Options::parse
   end # end of class
 
-  options = Options.parse!(ARGV)
+  options = Options.parse(ARGV)
   if options.enter
-    mkdir File.join(File.expand_path('.'), options.project_name)
-    #Dir.glob(ROOTDIR + '/*').each do |f| cp f unless f =~ exclude_dirs end
+    newdir = File.join(File.expand_path('.'), options.project_name)
+    FileUtils.mkdir newdir
+    FileUtils.cp_r File.join(File.expand_path(File.dirname(__FILE__)), '..') + '/bare/.', newdir
+    puts "Done."
   end
 end # end of module
 

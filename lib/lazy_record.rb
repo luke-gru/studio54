@@ -8,9 +8,10 @@ class LazyRecord < Studio54::Base
       cattr_accessor :primary_key
       attr_reader :errors
       include ::Studio54
-      include ActiveSupport::Callbacks
-      include ActiveModel::Callbacks
-      include ActiveModel::Serialization
+      # ActiveModel::Callbacks Base.class_eval {includes ActiveSupport::Callbacks}
+      extend ActiveModel::Callbacks
+      include ActiveModel::Serialization::JSON
+      include ActiveModel::Serialization::Xml
       extend  ActiveModel::Naming
       extend  ActiveModel::Translation
       include ActiveModel::Validations
