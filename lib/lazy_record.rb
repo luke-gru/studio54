@@ -10,8 +10,8 @@ class LazyRecord < Studio54::Base
       include ::Studio54
       # ActiveModel::Callbacks Base.class_eval {includes ActiveSupport::Callbacks}
       extend ActiveModel::Callbacks
-      include ActiveModel::Serialization::JSON
-      include ActiveModel::Serialization::Xml
+      include ActiveModel::Serializers::JSON
+      include ActiveModel::Serializers::Xml
       extend  ActiveModel::Naming
       extend  ActiveModel::Translation
       include ActiveModel::Validations
