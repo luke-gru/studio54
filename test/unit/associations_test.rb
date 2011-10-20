@@ -1,4 +1,4 @@
-class IndexPageTest < MiniTest::Unit::TestCase
+class AssociationTest < MiniTest::Unit::TestCase
   include Rack::Test::Methods
   include ::Studio54
 

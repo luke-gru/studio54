@@ -1,4 +1,4 @@
-class IndexPageTest < MiniTest::Unit::TestCase
+class CallbackTest < MiniTest::Unit::TestCase
   include Rack::Test::Methods
   include ::Studio54
 

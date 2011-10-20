@@ -13,6 +13,7 @@ module Studio54
     self.pass   = 'root'
     self.schema = 'test'
     self.type   = 'mysql'
+    # self.conn is set in config/db_connect.rb
 
     # The basic query interface method: Db.query(statement)
     if self.type == 'mysql'
@@ -50,5 +51,6 @@ when 'mysql'
     end
   end
 else
+  raise "Unrecognized database type #{Studio54::Db.type}"
 end
 

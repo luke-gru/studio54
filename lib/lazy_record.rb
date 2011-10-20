@@ -40,6 +40,11 @@ class LazyRecord < Studio54::Base
     @attributes ||= []
   end
 
+  def self.all_attributes
+    (@attributes || []).unshift primary_key unless
+      @attributes.include? primary_key
+  end
+
   def self.nested_attributes
     @nested_attributes ||= []
   end
@@ -114,7 +119,9 @@ class LazyRecord < Studio54::Base
       self.primary_key = fields
     end
     class_eval do
-      attr_accessor *fields
+      fields.each do |f|
+        attr_accessor f if f.is_a? Symbol
+      end
     end
   end
 
@@ -148,7 +155,7 @@ class LazyRecord < Studio54::Base
   # save current model instance into database
   def save
     unless self.valid?
-      return false
+      return
     end
     sql = "INSERT INTO #{self.class.table_name} ("
     fields = self.class.attributes
@@ -162,7 +169,7 @@ class LazyRecord < Studio54::Base
       end
     end
     sql = sql[0...-2] + ');'
-    res = Db.query(sql)
+    res = Studio54::Db.query(sql)
     if res.nil? or res.affected_rows != 1
       false
     else
