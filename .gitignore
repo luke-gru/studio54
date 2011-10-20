@@ -3,4 +3,5 @@
 /rack/cache/body/*
 /rack/cache/meta/*
 /static/css/*
+Gemfile.lock
 

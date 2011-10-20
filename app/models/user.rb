@@ -3,6 +3,17 @@ class User < LazyRecord
   has_many :posts
   tbl_attr_accessor :name, :age
 
+  def self.validate_presence_of *fields
+    fields.each do |f|
+      validate :"#{f}_not_blank"
+      define_method :"#{f}_not_blank" do
+        errors.add(self.class.table_name.singularize, "#{f} can't be blank") if (self.__send__ :"#{f}").blank?
+      end
+    end
+  end
+  attr_accessor :humor
+  validate_presence_of :humor
+
   # validations
   validate :name_not_blank
   validate :age_greater_than_18
@@ -12,6 +23,16 @@ class User < LazyRecord
 
   def age_greater_than_18
     errors.add(:user, "Age must be greater than 18") if self.age.to_i <= 18
+  end
+
+  define_callbacks :drink
+  set_callback :drink, :before do |obj|
+    obj.age = 21
+  end
+  def drink
+    run_callbacks :drink do
+      "mmm"
+    end
   end
 
   define_callbacks :save
