@@ -20,5 +20,7 @@ require 'minitest/autorun'
 Dir.glob(File.join(Studio54::Config::Environment::MODELSDIR, '*' )).each {|f| require f}
 
 # test files
-Dir.glob('**/*_test.rb').each {|f| require f}
+Dir.glob('**/*_test.rb').each {|f|
+  require f
+}
 

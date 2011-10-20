@@ -9,7 +9,7 @@ class LazyRecord < Studio54::Base
       attr_reader :errors
       include ::Studio54
       # ActiveModel::Callbacks Base.class_eval {includes ActiveSupport::Callbacks}
-      extend ActiveModel::Callbacks
+      extend  ActiveModel::Callbacks
       include ActiveModel::Serializers::JSON
       include ActiveModel::Serializers::Xml
       extend  ActiveModel::Naming
@@ -31,7 +31,7 @@ class LazyRecord < Studio54::Base
   # used to keep track of all table attributes
   def self.tbl_attr_accessor *fields
     fields.each do |f|
-      self.attributes << f unless self.attributes.include? f
+      self.attributes << f.to_s unless self.attributes.include? f.to_s
     end
     self.__send__ :attr_accessor, *fields
   end
@@ -41,8 +41,10 @@ class LazyRecord < Studio54::Base
   end
 
   def self.all_attributes
-    (@attributes || []).unshift primary_key unless
-      @attributes.include? primary_key
+    @all_attributes ||= begin
+      attrs = @attributes.dup
+      attrs.unshift primary_key
+    end
   end
 
   def self.nested_attributes
@@ -69,24 +71,23 @@ class LazyRecord < Studio54::Base
         model_string = m.to_s[0...-1]
         self.require_model model_string
         model_klass = Object.const_get m.to_s[0...-1].camelize
-        ivar_name = m
+        ivar_name = m.to_s
       elsif m.is_a? Hash
+        # establish non block-local scope
         v = nil
         v_sym_name = nil
         m.each do |k, v|
           model_string = v.name.tableize
           self.require_model model_string
           model_klass  = Object.const_get v.name
-          ivar_name = v_sym_name = model_string.intern
+          ivar_name = v_sym_name = model_string
         end
       end
       # Make sure associated model #belongs_to this class.
-      # The associated model is required automatically if
-      # not already required manually.
       unless model_klass.belongs_to_attributes.include? self.name.
-        tableize.intern
-        raise AssociationNotFound.new "#{model_klass} doesn't #belong_to
-      #{self.name}"
+        tableize
+        raise AssociationNotFound.new "#{model_klass} doesn't #belong_to " \
+      "#{self.name}"
       end
       class_eval do
         define_method ivar_name do
@@ -107,20 +108,20 @@ class LazyRecord < Studio54::Base
   # barely does anything, just works with has_many
   def self.belongs_to *models
     models.each do |m|
-      self.belongs_to_attributes << m unless
-        self.belongs_to_attributes.include? m
+      self.belongs_to_attributes << m.to_s unless
+        self.belongs_to_attributes.include? m.to_s
     end
   end
 
   def self.attr_primary(*fields)
     if fields.length == 1
-      self.primary_key = fields[0]
+      self.primary_key = fields[0].to_s != "" ? fields[0].to_s : nil
     else
-      self.primary_key = fields
+      self.primary_key = fields.map {|f| f.to_s }
     end
     class_eval do
       fields.each do |f|
-        attr_accessor f if f.is_a? Symbol
+        attr_accessor f unless f.nil?
       end
     end
   end
@@ -154,9 +155,7 @@ class LazyRecord < Studio54::Base
 
   # save current model instance into database
   def save
-    unless self.valid?
-      return
-    end
+    return unless valid?
     sql = "INSERT INTO #{self.class.table_name} ("
     fields = self.class.attributes
     sql += fields.join(', ') + ') VALUES ('
@@ -169,7 +168,7 @@ class LazyRecord < Studio54::Base
       end
     end
     sql = sql[0...-2] + ');'
-    res = Studio54::Db.query(sql)
+    res = Db.query(sql)
     if res.nil? or res.affected_rows != 1
       false
     else
@@ -183,8 +182,13 @@ class LazyRecord < Studio54::Base
   # works w/ mysql
   def self.find(id)
     sql = "SELECT * FROM #{self.table_name} WHERE #{self.primary_key} = #{id};"
-    res = Db.query(sql)
-    test_resultset res
+    begin
+      res = Db.query(sql)
+    rescue Mysql::Error
+      @retries ||= 0; @retries += 1
+      load 'config/db_connect.rb'
+      retry unless @retries > 1
+    end
     build_from res
   end
 
@@ -204,14 +208,12 @@ class LazyRecord < Studio54::Base
       raise "composite sql condition in #{__method__} must be one of AND, OR"
     end
     res = Db.query(sql)
-    test_resultset res
     build_from res
   end
 
   def self.all
     sql = "SELECT * FROM #{self.table_name};"
     res = Db.query(sql)
-    test_resultset res
     build_from res
   end
 
@@ -219,6 +221,7 @@ class LazyRecord < Studio54::Base
 
   # meant for internal use
   def self.build_from(resultset)
+    test_resultset resultset
     model_instances = [].tap do |m|
       resultset.each_hash do |h|
         model = self.new

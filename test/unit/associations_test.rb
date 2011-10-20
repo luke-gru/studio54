@@ -21,11 +21,11 @@ class AssociationTest < MiniTest::Unit::TestCase
   def test_reciprocal_association
     Post.tap do |p|
       p.class_eval { belongs_to :users, :new_klass }
-      assert_equal [:users, :new_klass], p.belongs_to_attributes
+      assert_equal [:users, :new_klass].map(&:to_s), p.belongs_to_attributes
     end
     User.tap do |u|
       u.class_eval { has_many :posts   }
-      assert_equal [:posts], u.nested_attributes
+      assert_equal [:posts].map(&:to_s), u.nested_attributes
     end
   end
 

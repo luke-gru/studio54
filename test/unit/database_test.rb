@@ -26,8 +26,7 @@ class DatabaseTest < MiniTest::Unit::TestCase
 
   def test_invalid_save
     u = User.new
-    ret = u.save
-    assert_nil ret
+    assert_nil u.save
   end
 
   def test_simple_id_find
@@ -61,6 +60,13 @@ class DatabaseTest < MiniTest::Unit::TestCase
     @user = User.new params[:user]
     assert_equal 'luke', @user.name
     assert_equal '22', @user.age
+  end
+
+  def test_find_all_from_tbl
+    @users = User.all
+    sql = "SELECT * FROM users;"
+    res = Db.query(sql)
+    assert_equal res.count, @users.count
   end
 
 end

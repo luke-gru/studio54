@@ -7,9 +7,9 @@ class ModelIntrospectionTest < MiniTest::Unit::TestCase
   end
 
   def test_tbl_attribute_introspection
-    assert_equal :id, User.primary_key
-    assert_equal [:name, :age], User.attributes
-    assert_equal [:id, :name, :age], User.all_attributes
+    assert_equal :id.to_s, User.primary_key
+    assert_equal [:name, :age].map(&:to_s), User.attributes
+    assert_equal [:id, :name, :age].map(&:to_s), User.all_attributes
   end
 
   def test_default_tbl_name
@@ -32,7 +32,7 @@ class ModelIntrospectionTest < MiniTest::Unit::TestCase
     Post.class_eval do
       attr_primary :id, :user_id
     end
-    assert_equal [:id, :user_id], Post.primary_key
+    assert_equal [:id, :user_id].map(&:to_s), Post.primary_key
     # and change back so unordered tests don't break
     Post.class_eval do
       attr_primary nil

@@ -3,6 +3,20 @@ class User < LazyRecord
   has_many :posts
   tbl_attr_accessor :name, :age
 
+  def attributes(options={})
+    opts = options.merge :include_pk => true
+    if opts[:include_pk]
+      attrs = self.class.all_attributes
+    else
+      attrs = self.class.attributes
+    end
+    {}.tap do |h|
+      attrs.each do |a_name|
+        h[a_name] = instance_variable_get "@#{a_name}"
+      end
+    end
+  end
+
   def self.validate_presence_of *fields
     fields.each do |f|
       validate :"#{f}_not_blank"

@@ -13,6 +13,7 @@ module Studio54
     self.pass   = 'root'
     self.schema = 'test'
     self.type   = 'mysql'
+    self.conn   = nil
     # self.conn is set in config/db_connect.rb
 
     # The basic query interface method: Db.query(statement)
@@ -43,8 +44,12 @@ when 'mysql'
   # should really be a module
   class Mysql
     class Result
+      def count
+        self.num_rows
+      end
+
       def empty?
-        self.num_rows.zero?
+        count.zero?
       end
       # Mysql library already defines Result#affected_rows.
       # All other dbms gems should adhere to this interface.
