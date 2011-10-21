@@ -126,6 +126,13 @@ class LazyRecord < Studio54::Base
     end
   end
 
+  # associated table name, by default is just to add an 's' to the model
+  # name
+  def self.assoc_table_name=( tblname=self.name.tableize )
+    self.__send__ :cattr_accessor, :table_name
+    self.table_name = tblname.to_s
+  end
+
   public
 
   # meant for internal use
@@ -135,23 +142,21 @@ class LazyRecord < Studio54::Base
     end
   end
 
-  private
-
-  # meant for internal use
-  def self.test_resultset(res)
-    if res.empty?
-      raise RecordNotFound.new "Bad resultset #{res}"
+  # Have to implement Model#attributes to play nice
+  # with ActiveModel serializers
+  def attributes(options={})
+    opts = options.merge :include_pk => true
+    if opts[:include_pk]
+      attrs = self.class.all_attributes
+    else
+      attrs = self.class.attributes
+    end
+    {}.tap do |h|
+      attrs.each do |a_name|
+        h[a_name] = instance_variable_get "@#{a_name}"
+      end
     end
   end
-
-  # associated table name, by default is just to add an 's' to the model
-  # name
-  def self.assoc_table_name=( tblname=self.name.downcase+'s' )
-    self.__send__ :cattr_accessor, :table_name
-    self.table_name = tblname.to_s
-  end
-
-  public
 
   # save current model instance into database
   def save
@@ -231,6 +236,13 @@ class LazyRecord < Studio54::Base
     end
     model_instances.length == 1 ? model_instances[0] :
     model_instances
+  end
+
+  # meant for internal use
+  def self.test_resultset(res)
+    if res.empty?
+      raise RecordNotFound.new "Bad resultset #{res}"
+    end
   end
 
   public
