@@ -19,7 +19,7 @@ module Studio54
     end
 
     def self.require_all_models
-      Dir.glob(MODELSDIR + '/.*').each do |m_file|
+      Dir.glob(File.join(MODELSDIR, '*')).each do |m_file|
         require m_file
       end
     end

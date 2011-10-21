@@ -1,7 +1,13 @@
 class UsersController < LazyController
 
+  before_action :index do |obj|
+    @second_user = 'me'
+  end
+
   def index
-    @user = User.find(1)
+    run_callbacks __method__ do
+      @user = User.find(1)
+    end
   end
 
   def all

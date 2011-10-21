@@ -4,7 +4,8 @@ module Studio54
     Base.app_class = self
 
     before do
-      load 'config/db_connect.rb'
+      load 'config/db_connect.rb' if self.class.environment ==
+        :development
       # wraps Dancefloor instance scope (request) for convenience
       Base.app_instance = self
 
@@ -13,10 +14,11 @@ module Studio54
         unless @flash.nil?
           @flash.each do |k,v|
             Base.app_instance.instance_eval do
+              @flash = {}
               if k != :errors
-                @flash_content = "<div id=#{k}>#{v}</div>"
+                @flash[k] = "<div id=#{k}>#{v}</div>"
               else
-                @flash_errors = {k => v}
+                @flash[k] = v
               end
             end
           end

@@ -1,17 +1,13 @@
 class Studio54::Dancefloor
-
   helpers do
-    def logger
-      request.logger
-    end
 
     def flash(hash)
       self.class.instance_eval do
         @flash = hash
       end
     end
-  end
 
+  end
 end
 
 module Sinatra

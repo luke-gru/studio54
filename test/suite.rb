@@ -16,8 +16,10 @@ require 'minitest/autorun'
 # require 'shoulda'
 # require 'rspec'
 
-#require all model files
+# require all model files
 Dir.glob(File.join(Studio54::Config::Environment::MODELSDIR, '*' )).each {|f| require f}
+# require all controllers files
+Dir.glob(File.join(Studio54::Config::Environment::CONTROLLERSDIR, '*' )).each {|f| require f}
 
 # test files
 Dir.glob('**/*_test.rb').each {|f|

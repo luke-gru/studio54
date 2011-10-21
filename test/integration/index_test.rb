@@ -6,6 +6,15 @@ class IndexPageTest < MiniTest::Unit::TestCase
     Dancefloor.new
   end
 
+  def test_callbacks_working
+    get '/'
+    var = nil
+    Base.app_instance.instance_eval do
+      var = @second_user
+    end
+    assert_equal 'me', var
+  end
+
   def test_index_response
     get '/'
     app = Base.app_instance
@@ -18,22 +27,18 @@ class IndexPageTest < MiniTest::Unit::TestCase
     assert_equal true, last_response.html?
   end
 
-  def test_flash_is_set
+  def test_flash_is_set_in_app_class
     get '/'
     app = Base.app_instance
     app_class = Base.app_class
     app.instance_eval do
       flash :notice => 'hey this is a flash notice'
     end
-    flash_msg = nil
+    flash = nil
     app_class.instance_eval do
-      flash_msg = @flash
+      flash = @flash
     end
-    assert_equal({:notice => 'hey this is a flash notice'}, flash_msg)
-  end
-
-  def test_ActiveModel_callbacks_working
-
+    assert_equal('hey this is a flash notice', flash[:notice])
   end
 
 end

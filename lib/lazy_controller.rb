@@ -2,12 +2,27 @@ class LazyController < Studio54::Base
 
   class << self
 
+    def inherited(base)
+      base.extend  ActiveModel::Callbacks
+    end
+
     def app_class_eval(&block)
       self.app_class.class_eval &block
     end
 
     def app_instance_eval(&block)
       self.app_instance.instance_eval &block
+    end
+
+    ["before_action", "after_action", "around_action"].each do |m|
+      m =~ /\A(.*?)_/
+      type = $1
+      class_eval <<RUBY, __FILE__, __LINE__ + 1
+      def #{m}(action, &block)
+        define_callbacks action
+        set_callback action, :#{type}, &block
+      end
+RUBY
     end
 
   end

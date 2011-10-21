@@ -173,11 +173,26 @@ class LazyRecord < Studio54::Base
       end
     end
     sql = sql[0...-2] + ');'
-    res = Db.query(sql)
+    res = nil
+    self.class.db_try do
+      res = Db.query(sql)
+    end
     if res.nil? or res.affected_rows != 1
       false
     else
       true
+    end
+  end
+
+  def self.db_try
+    begin
+      yield
+    rescue Mysql::Error
+      @retries ||= 0; @retries += 1
+      unless @retries > 1
+        load 'config/db_connect.rb'
+        retry
+      end
     end
   end
 
@@ -187,12 +202,9 @@ class LazyRecord < Studio54::Base
   # works w/ mysql
   def self.find(id)
     sql = "SELECT * FROM #{self.table_name} WHERE #{self.primary_key} = #{id};"
-    begin
+    res = nil
+    db_try do
       res = Db.query(sql)
-    rescue Mysql::Error
-      @retries ||= 0; @retries += 1
-      load 'config/db_connect.rb'
-      retry unless @retries > 1
     end
     build_from res
   end
@@ -212,13 +224,19 @@ class LazyRecord < Studio54::Base
     else
       raise "composite sql condition in #{__method__} must be one of AND, OR"
     end
-    res = Db.query(sql)
+    res = nil
+    db_try do
+      res = Db.query(sql)
+    end
     build_from res
   end
 
   def self.all
     sql = "SELECT * FROM #{self.table_name};"
-    res = Db.query(sql)
+    res = nil
+    db_try do
+      res = Db.query(sql)
+    end
     build_from res
   end
 
