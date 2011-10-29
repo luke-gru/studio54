@@ -19,12 +19,28 @@ class LazyController < Studio54::Base
       type = $1
       class_eval <<RUBY, __FILE__, __LINE__ + 1
       def #{m}(action, &block)
-        define_callbacks action
-        set_callback action, :#{type}, &block
+        define_callbacks ('old_' + action.to_s)
+        set_callback ('old_' + action.to_s), :#{type}, &block
+        define_singleton_method "method_added" do |action_name|
+          matchstring = Regexp.new('^' + action.to_s + '$')
+          if matchstring.match action_name
+            alias_method ('old_' + action.to_s).intern, action
+            remove_method action
+            define_method ("proxy_" + action.to_s) do |*args, &block|
+              run_callbacks ('old_' + action.to_s) do
+                __send__ ('old_' + action.to_s).intern , *args, &block
+              end
+            end
+            define_method "method_missing" do |method, *args, &block|
+              if matchstring.match method
+                __send__ ("proxy_" + method.to_s), *args, &block
+              end
+            end
+          end
+        end
       end
 RUBY
     end
-
   end
 
   # included in Dancefloor

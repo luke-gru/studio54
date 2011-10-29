@@ -5,9 +5,7 @@ class UsersController < LazyController
   end
 
   def index
-    run_callbacks __method__ do
-      @user = User.find(1)
-    end
+    @user = User.find(1)
   end
 
   def all

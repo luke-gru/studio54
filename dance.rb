@@ -1,4 +1,4 @@
-require File.join(File.expand_path(File.dirname(__FILE__)), "config/app_tie")
+require File.join(File.expand_path(File.dirname(__FILE__)), "config", "app_tie")
 
 # main app class
 class Studio54::Dancefloor

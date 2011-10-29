@@ -41,7 +41,6 @@ end
 # The basic resultset interface methods
 case Studio54::Db.type
 when 'mysql'
-  # should really be a module
   class Mysql
     class Result
       def count

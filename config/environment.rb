@@ -2,7 +2,7 @@ module Studio54
   module Config
     module Environment
 
-      ROOTDIR   = File.expand_path(File.dirname(__FILE__) + '/..')
+      ROOTDIR   = File.join(File.expand_path(File.dirname(__FILE__)), '..')
       APPDIR    = File.join(ROOTDIR, "app")
       LIBDIR    = File.join(ROOTDIR, "lib")
       BINDIR    = File.join(ROOTDIR, "bin")

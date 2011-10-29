@@ -1,5 +1,13 @@
 class LazyRecord < Studio54::Base
   include ::Studio54
+  # ActiveModel::Callbacks Base.class_eval {includes ActiveSupport::Callbacks}
+  extend  ActiveModel::Callbacks
+  include ActiveModel::Serializers::JSON
+  include ActiveModel::Serializers::Xml
+  extend  ActiveModel::Naming
+  extend  ActiveModel::Translation
+  include ActiveModel::Validations
+
   RecordNotFound      = Class.new(StandardError)
   AssociationNotFound = Class.new(StandardError)
 
@@ -7,14 +15,6 @@ class LazyRecord < Studio54::Base
     base.class_eval do
       cattr_accessor :primary_key
       attr_reader :errors
-      include ::Studio54
-      # ActiveModel::Callbacks Base.class_eval {includes ActiveSupport::Callbacks}
-      extend  ActiveModel::Callbacks
-      include ActiveModel::Serializers::JSON
-      include ActiveModel::Serializers::Xml
-      extend  ActiveModel::Naming
-      extend  ActiveModel::Translation
-      include ActiveModel::Validations
     end
   end
 
