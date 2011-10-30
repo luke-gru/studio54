@@ -1,6 +1,8 @@
 class Studio54::Dancefloor
   helpers do
-
+    include Rack::Utils
+    # have to explicitly use h(...) to escape html
+    alias_method :h, :escape_html
   end
 end
 
