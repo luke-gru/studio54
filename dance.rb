@@ -50,7 +50,7 @@ class Studio54::Dancefloor
     res = controller :users, :create, params
     if res
       flash[:notice] = "you created user #{@user.name}"
-      redirect to('/')
+      redirect to('/all')
     else
       flash[:error] = @user.errors
       redirect to('/form')

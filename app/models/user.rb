@@ -33,6 +33,7 @@ class User < LazyRecord
 
   define_callbacks :save
   set_callback :save, :before do |object|
+    @humor = true
   end
 
   def save

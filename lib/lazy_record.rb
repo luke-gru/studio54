@@ -173,15 +173,11 @@ class LazyRecord < Studio54::Base
       end
     end
     sql = sql[0...-2] + ');'
-    res = nil
+    result = nil
     self.class.db_try do
-      res = Db.query(sql)
+      result = Db.query(sql)
     end
-    if res.nil? or res.affected_rows != 1
-      false
-    else
-      true
-    end
+    true
   end
 
   def self.db_try
@@ -189,9 +185,11 @@ class LazyRecord < Studio54::Base
       yield
     rescue Mysql::Error
       @retries ||= 0; @retries += 1
-      unless @retries > 1
+      if @retries == 1
         load 'config/db_connect.rb'
         retry
+      else
+        raise
       end
     end
   end

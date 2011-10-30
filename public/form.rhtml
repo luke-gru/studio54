@@ -1,6 +1,6 @@
-<% unless @flash_errors.nil? %>
-  <% @flash_errors[:errors][:user].each do |m| %>
-    <%= m %>
+<% unless flash[:error].blank? %>
+  <% flash[:error].each do |k,v| %>
+    <%= k.to_s + " #{v}<br />" %>
   <% end %>
 <% end %>
 <form method="post" action="/create_user">
