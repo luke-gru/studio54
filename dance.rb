@@ -48,5 +48,21 @@ class Studio54::Dancefloor
     end
   end
 
+  post '/email/send' do
+    Pony.mail :to =>  'luke.gru@gmail.com',
+              :via => :smtp,
+      :via_options => {
+        :address => 'smtp.gmail.com',
+        :port => '587',
+        :enable_starttls_auto => true,
+        :user_name => 'luke.gru@gmail.com',
+        :password => ENV['PASS'],
+        :authentication => :plain,
+        :domain =>  "localhost.localdomain",
+        :headers => {"Content-Type" => 'text/plain'}
+    },
+      :subject => 'Hey, this is a really great idea',
+      :body =>    'Hi me!'
+  end
 end
 

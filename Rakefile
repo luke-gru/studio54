@@ -44,5 +44,10 @@ namespace :test do
     t.test_files = FileList['test/integration/runner*'].to_a
   end
 
+  desc 'Run email tests (test/email/*)'
+  Rake::TestTask.new(:email) do |t|
+    t.test_files = FileList['test/email*'].to_a
+  end
+
 end
 
