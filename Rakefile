@@ -1,5 +1,8 @@
 $:.unshift 'lib'
 $:.unshift 'rakelib'
+$:.unshift 'config'
+require 'environment'
+include Studio54::Config::Environment
 
 require 'rake/testtask'
 require 'rake/clean'
@@ -9,7 +12,7 @@ include FileUtils
 task :default => [:output_test_count]
 
 task :output_test_count do
-  files = FileList['test/**/*'].to_a
+  files = Dir.glob(File.join(ROOTDIR, 'test', '**/*'))
   puts "#{files.count} test files to run."
 end
 
