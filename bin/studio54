@@ -26,7 +26,7 @@ module Studio54
         end
 
         opts.on_tail("-v", "--version", "Show Studio54 version") do
-          puts Studio54::VERSION.join('.')
+          puts VERSION * '.'
           exit
         end
 
@@ -45,7 +45,20 @@ module Studio54
   if options.enter
     newdir = File.join(File.expand_path('.'), options.project_name)
     FileUtils.mkdir newdir
-    FileUtils.cp_r File.join(File.expand_path(File.dirname(__FILE__)), '..') + '/bare/.', newdir
+    FileUtils.cp_r File.join(File.expand_path(File.dirname(__FILE__)),
+                             '..') + '/bare/.', newdir
+    FileUtils.mkdir_p File.join(newdir, 'app', 'models')
+    FileUtils.mkdir   File.join(newdir, 'app', 'controllers')
+    FileUtils.mkdir   File.join(newdir, 'rakelib')
+    FileUtils.mkdir_p File.join(newdir, 'db', 'versions')
+    FileUtils.mkdir_p File.join(newdir, 'rack', 'cache', 'body')
+    FileUtils.mkdir   File.join(newdir, 'rack', 'cache', 'meta')
+    if `ctags --version`
+      Dir.chdir newdir do
+        system "ctags -R ."
+        puts "Installed ctags."
+      end
+    end
     puts "Done."
   end
 end # end of module

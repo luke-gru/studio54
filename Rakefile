@@ -14,20 +14,18 @@ task :output_test_count do
   puts "#{files.count} test files to run."
 end
 
-namespace :bare do
-  desc 'Repopulate bare directory (new app directory)'
-  task :repopulate do
-    root = File.expand_path(File.dirname(__FILE__))
-    rm_r 'bare';  mkdir_p 'bare/app/models'
-    mkdir   'bare/app/controllers'
-    mkdir_p 'bare/db/versions'
-    mkdir 'bare/lib';  mkdir 'bare/public'
-    mkdir 'bare/rack'; mkdir 'bare/rakelib'
-    mkdir 'bare/test'; mkdir 'bare/static'
-    cp_r  File.join(root, 'lib') + '/.',
-          File.join(root, 'bare/lib')
-    cp_r  File.join(root, 'config') + '/.',
-          File.join(root, 'bare/config')
+namespace :gem do
+  desc 'rebuild the studio54 gem'
+  task :rebuild do
+    if `gem list | grep studio54`
+      system("gem uninstall studio54 --executables")
+    end
+    gemfile = Dir.glob 'studio54-*'
+    rm gemfile
+    gemspec = 'studio54.gemspec'
+    system "gem build #{gemspec}"
+    new_gemfile = Dir.glob 'studio54-*'
+    system "gem install #{new_gemfile}"
   end
 end
 
