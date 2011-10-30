@@ -1,6 +1,15 @@
 require File.join(File.expand_path(File.dirname(__FILE__)), "config", "app_tie")
 
 # main app class
+#
+# this is all test logic, to test the library files
+# in studio54/lib
+#
+# the corresponding unit and integration test are in
+# studio54/test/unit and studio54/test/integration
+#
+# along with those are some email tests to test the
+# default studio54 email gem: pony
 class Studio54::Dancefloor
   include LazyController::Routable
 

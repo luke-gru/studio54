@@ -1,4 +1,9 @@
-Copyright (c) 2011 by ______
+Copyright (c) 2011 by Luke Gruber
+
+This software is a bridge between Sinatra, parts of Rails, and my own
+code. The code herein is licensed either under the same license as
+Sinatra, the same license as Rails, or the 'MIT' license contained
+below. The user can choose which license suits their needs the best.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
