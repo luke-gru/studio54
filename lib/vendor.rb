@@ -1,5 +1,6 @@
 require "sinatra/base"
 require "rack/cache"
+require "rack-flash"
 require "active_support/core_ext/array"
 require "active_support/core_ext/class"
 require "active_support/core_ext/enumerable"
@@ -15,4 +16,6 @@ require "active_support/core_ext/string/filters"
 require "active_support/core_ext/string/inflections"
 require "active_support/callbacks"
 require "active_model"
+
+require_relative 'partials'
 

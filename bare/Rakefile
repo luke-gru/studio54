@@ -16,7 +16,7 @@ test = Rake::TestTask.new(:test) do |t|
 end
 
 task :output_test_count do
-  STDOUT.puts(TEST_LIST.count + SPEC_LIST.count).to_s + " test files to run."
+  puts(TEST_LIST.count + SPEC_LIST.count).to_s + " test files to run."
 end
 
 namespace :test do

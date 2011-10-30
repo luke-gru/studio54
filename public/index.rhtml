@@ -1,5 +1,5 @@
-<h1>Hello world <%= 2 + 4 %></h1>
-  <%= @flash_content unless @flash_content.nil? %>
+<h1>Hello world</h1>
+<%= flash[:notice] if flash[:notice].present? %>
 <a href="hello.html">Go to hello</a><br />
 <%= @user.name %>
 

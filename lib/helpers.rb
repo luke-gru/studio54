@@ -1,12 +1,6 @@
 class Studio54::Dancefloor
   helpers do
 
-    def flash(hash)
-      self.class.instance_eval do
-        @flash = hash
-      end
-    end
-
   end
 end
 
@@ -19,6 +13,7 @@ module Sinatra
     end
 
     def send(status=200)
+      set_content_length!
       [status, self.headers, self.body]
     end
 

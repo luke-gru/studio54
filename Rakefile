@@ -1,6 +1,5 @@
 $:.unshift 'lib'
 $:.unshift 'rakelib'
-$:.unshift 'test'
 
 require 'rake/testtask'
 require 'rake/clean'
@@ -37,12 +36,12 @@ namespace :test do
 
   desc 'Run unit tests (test/unit/*)'
   Rake::TestTask.new(:unit) do |t|
-    t.test_files = FileList['test/unit/*'].to_a
+    t.test_files = FileList['test/unit/runner*'].to_a
   end
 
   desc 'Run integration tests (test/integration/*)'
   Rake::TestTask.new(:integration) do |t|
-    t.test_files = FileList['test/integration/*'].to_a
+    t.test_files = FileList['test/integration/runner*'].to_a
   end
 
 end

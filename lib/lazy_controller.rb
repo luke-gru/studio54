@@ -45,6 +45,11 @@ RUBY
 
   # included in Dancefloor
   module Routable
+    def self.included(base)
+      base.__send__ :use, Rack::Flash
+      base.__send__ :helpers, Sinatra::Partials
+    end
+
     # Db is a constant in Studio54 scope
     include ::Studio54
     include ::Studio54::Config::Environment

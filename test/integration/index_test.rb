@@ -1,6 +1,6 @@
 class IndexPageTest < MiniTest::Unit::TestCase
   include Rack::Test::Methods
-  include ::Studio54
+  include Studio54
 
   def app
     Dancefloor.new
@@ -27,18 +27,14 @@ class IndexPageTest < MiniTest::Unit::TestCase
     assert_equal true, last_response.html?
   end
 
-  def test_flash_is_set_in_app_class
+  def test_flash_is_set
     get '/'
     app = Base.app_instance
-    app_class = Base.app_class
+    flashy = nil
     app.instance_eval do
-      flash :notice => 'hey this is a flash notice'
+      flashy = flash[:notice]
     end
-    flash = nil
-    app_class.instance_eval do
-      flash = @flash
-    end
-    assert_equal('hey this is a flash notice', flash[:notice])
+    assert_equal('hi', flashy)
   end
 
 end

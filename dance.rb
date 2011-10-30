@@ -7,39 +7,43 @@ class Studio54::Dancefloor
   get '/' do
     controller :users, :index
     # response["Cache-Control"] = "max-age=2, public"
+    flash[:notice] = "hi"
     response.body = erb :index
-    response.set_content_length!
-    response.send(200)
+    response.send
   end
 
   get '/test_find_by' do
     controller :users, :find_by
     response.body = erb :test_find_by
-    response.set_content_length!
-    response.send 200
+    response.send
   end
 
   get '/form' do
     controller :users, :new
     response.body = erb :form
-    response.set_content_length!
     response.send
   end
 
   get '/all' do
     controller :users, :all
     response.body = erb :all
-    response.set_content_length!
+    response.send
+  end
+
+  get '/partial' do
+    @content = [1,2,3]
+    @partial_content = [4,5,6]
+    response.body = erb :partial_test
     response.send
   end
 
   post '/create_user' do
     res = controller :users, :create, params
     if res
-      flash :notice => "you created user #{@user.name}"
+      flash[:notice] = "you created user #{@user.name}"
       redirect to('/')
     else
-      flash :errors => @user.errors
+      flash[:error] = @user.errors
       redirect to('/form')
     end
   end
