@@ -1,8 +1,5 @@
 #// vim: set ts=2 sw=2 syntax=ruby ://#
-
-rootdir_modulename = File.expand_path(File.dirname(__FILE__)).gsub(/(.*\/)/, '').capitalize
-# strip version name (gems)
-rootdir_modulename.gsub!(/-\d.*/, '')
-mod = Object.const_get(rootdir_modulename)
-mod::VERSION = [0,0,2]
+module Studio54
+  VERSION = [0,0,3]
+end
 
