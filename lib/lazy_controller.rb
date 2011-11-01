@@ -75,7 +75,8 @@ RUBY
           instance_variable_set ivar, ivar_value
         end
       ensure
-        Db.conn.close if Db.conn
+        Db.conn.disconnect if Db.conn.kind_of? DBI::DatabaseHandle and
+        Db.conn.connected?
       end
       result
     end

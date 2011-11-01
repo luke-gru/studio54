@@ -17,5 +17,6 @@ require "active_support/core_ext/string/inflections"
 require "active_support/callbacks"
 require "active_model"
 
+require "dbi"
 require_relative 'partials'
 

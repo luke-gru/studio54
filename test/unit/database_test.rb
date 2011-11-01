@@ -65,7 +65,7 @@ class DatabaseTest < MiniTest::Unit::TestCase
   def test_find_all_from_tbl
     @users = User.all
     sql = "SELECT * FROM users;"
-    res = Db.query(sql)
+    res = Db.conn.execute(sql)
     assert_equal res.count, @users.count
   end
 

@@ -9,14 +9,16 @@ gem "sinatra"
 gem "activesupport"
 gem "activemodel"
 
-# optional, only need it if serving xml
+# dbi
+gem "dbi"
+# dbi driver
+gem "dbd-mysql"
+
+# optional, only need if serving xml
 gem "builder"
 
-#optional, for sending email
+# optional, for sending email
 gem "pony"
-
-# dbms
-gem "mysql"
 
 group :development do
   gem "thin"

@@ -164,18 +164,19 @@ class LazyRecord < Studio54::Base
     sql = "INSERT INTO #{self.class.table_name} ("
     fields = self.class.attributes
     sql += fields.join(', ') + ') VALUES ('
-    values = fields.map {|f| instance_variable_get "@#{f}"}
-    values.each do |v|
-      if v.nil?
-        sql += 'NULL, '
+    fields.each {|f| sql += '?, '}
+    sql = sql[0...-2] + ')'
+    values = fields.map do |f|
+      ivar = instance_variable_get "@#{f}"
+      if ivar.nil?
+        "NULL"
       else
-        sql += "'#{v}', "
+        ivar
       end
     end
-    sql = sql[0...-2] + ');'
     result = nil
     self.class.db_try do
-      result = Db.query(sql)
+      result = Db.conn.execute sql, *values
     end
     true
   end
@@ -183,7 +184,7 @@ class LazyRecord < Studio54::Base
   def self.db_try
     begin
       yield
-    rescue Mysql::Error
+    rescue DBI::DatabaseError
       @retries ||= 0; @retries += 1
       if @retries == 1
         load 'config/db_connect.rb'
@@ -199,10 +200,10 @@ class LazyRecord < Studio54::Base
   # TODO take into account other dbms's, this only
   # works w/ mysql
   def self.find(id)
-    sql = "SELECT * FROM #{self.table_name} WHERE #{self.primary_key} = #{id};"
+    sql = "SELECT * FROM #{self.table_name} WHERE #{self.primary_key} = ?"
     res = nil
     db_try do
-      res = Db.query(sql)
+      res = Db.conn.execute sql, id
     end
     build_from res
   end
@@ -211,8 +212,10 @@ class LazyRecord < Studio54::Base
     opts = {:composite => 'AND'}.merge options
     composite = opts[:composite]
     sql = "SELECT * FROM #{self.table_name} WHERE "
+    values = []
     hash.each do |k, v|
-      sql += "#{k} = '#{v}' #{composite} "
+      sql += "#{k} = ? #{composite} "
+      values << v
     end
     case composite
     when 'AND'
@@ -224,16 +227,16 @@ class LazyRecord < Studio54::Base
     end
     res = nil
     db_try do
-      res = Db.query(sql)
+      res = Db.conn.execute sql, *values
     end
     build_from res
   end
 
   def self.all
-    sql = "SELECT * FROM #{self.table_name};"
+    sql = "SELECT * FROM #{self.table_name}"
     res = nil
     db_try do
-      res = Db.query(sql)
+      res = Db.conn.execute(sql)
     end
     build_from res
   end
@@ -244,11 +247,12 @@ class LazyRecord < Studio54::Base
   def self.build_from(resultset)
     test_resultset resultset
     model_instances = [].tap do |m|
-      resultset.each_hash do |h|
+      resultset.fetch_hash do |h|
         model = self.new
         model.build_from_params! h
         m << model
       end
+      resultset.finish
     end
     model_instances.length == 1 ? model_instances[0] :
     model_instances
@@ -256,7 +260,7 @@ class LazyRecord < Studio54::Base
 
   # meant for internal use
   def self.test_resultset(res)
-    if res.empty?
+    if res.blank?
       raise RecordNotFound.new "Bad resultset #{res}"
     end
   end
