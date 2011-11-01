@@ -15,8 +15,9 @@ require "active_support/core_ext/string/behavior"
 require "active_support/core_ext/string/filters"
 require "active_support/core_ext/string/inflections"
 require "active_support/callbacks"
-require "active_model"
 
+require "active_model"
 require "dbi"
+
 require_relative 'partials'
 

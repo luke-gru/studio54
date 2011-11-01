@@ -178,7 +178,7 @@ class LazyRecord < Studio54::Base
     self.class.db_try do
       result = Db.conn.execute sql, *values
     end
-    true
+    result ? true : false
   end
 
   def self.db_try

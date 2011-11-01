@@ -1,5 +1,6 @@
 <h1>All Users</h1>
 <%= flash[:notice] if flash[:notice].present? %>
+<br />
 <% @users.each do |user| %>
   <p><%= user.name %>: <%= user.age %> years old</p>
 <% end %>

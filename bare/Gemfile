@@ -11,8 +11,10 @@ gem "activemodel"
 # optional, only need it if serving xml
 gem "builder"
 
-# dbms
-gem "mysql"
+# dbi
+gem "dbi"
+# dbi driver
+gem "dbd-mysql"
 
 #optional, for sending email
 #gem "pony"
