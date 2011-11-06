@@ -64,7 +64,16 @@ class LazyRecord < Studio54::Base
   # from the default (chop the trailing 's' off from the model name).
   #
   # Example:
-  # has_many :tags, {:through => 'tags_articles', :fk => 'article_id'}
+  # has_many :tags, {:through => 'tags_articles', :fk => 'tagid'}
+  #
+  # default
+  # =======
+  #
+  # has_many :tags
+  #
+  # is equivalent to
+  #
+  # has_many :tags, {:through => 'tags_articles', :fk => 'tag_id'}
   def self.has_many model, options={}
     # @join_tables:
     # Used with LR#build_associated, to find out what the join table and
@@ -230,8 +239,8 @@ class LazyRecord < Studio54::Base
   # to make 'tags_articles'
   #
   # The default foreign key uses a similar heuristic. For the
-  # example above, it would be 'article_id', because `self`'s
-  # table name is `articles`, and the singular is 'article'. This
+  # example above, it would be 'tag_id', because the given
+  # table name is 'tags', and the singular is 'tag'. This
   # is then concatenated with '_id'
   #
   # To override the defaults, provide options to Model::has_many()
@@ -247,24 +256,26 @@ class LazyRecord < Studio54::Base
            instance_variable_get("@join_tables")[tbl][:fk]
       _fk
     else
-      "#{self_tbl.singularize}_id"
+      "#{tbl.to_s.singularize}_id"
     end
 
+    tbl_model_name = tbl.to_s.singularize.camelize
+    begin
+      tbl_model = Object.const_get tbl_model_name
+    rescue NameError
+      retry if require "app/models/#{tbl_model_name.downcase}"
+    end
     pk = self.class.primary_key
+    sql =
+      "SELECT * FROM #{tbl} INNER JOIN #{through} ON #{tbl}." \
+      "#{tbl_model.primary_key} = #{through}.#{fk} WHERE #{through}." \
+      "#{self_tbl.singularize + '_id'} = ?"
+
     id = __send__ pk
-    sql = "SELECT * FROM #{through} WHERE #{fk} = ?"
     res = nil
     self.class.db_try do
       res = Db.conn.execute sql, id
     end
-    model_name = tbl.to_s.singularize.capitalize
-
-    begin
-      tbl_model = Object.const_get(model_name)
-    rescue NameError
-      retry if require "app/models/#{model_name.downcase}"
-    end
-
     objs = tbl_model.build_from res
     objs = Array.wrap(objs) unless Array === objs
     __send__("#{tbl}=", __send__(tbl) + objs) unless objs.blank?
