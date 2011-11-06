@@ -1,5 +1,5 @@
 #// vim: set ts=2 sw=2 syntax=ruby ://#
 module Studio54
-  VERSION = [0,0,4]
+  VERSION = [0,0,5]
 end
 

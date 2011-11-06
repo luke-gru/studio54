@@ -1,7 +1,7 @@
 class User < LazyRecord
   attr_primary :id
-  has_many :posts
   tbl_attr_accessor :name, :age
+  has_many :posts
   attr_accessor :humor
   attr_accessor :email
 

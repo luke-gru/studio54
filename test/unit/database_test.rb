@@ -40,13 +40,13 @@ class DatabaseTest < MiniTest::Unit::TestCase
   # need to fix find_by to take into account ORs with the same
   # field name, and a mixture of ANDs and ORs, need a composites
   # hash with a length equal to the sum of the previous arguments
-  def test_composite_AND_find
+  def test_find_by_conjunction_AND
     @users = User.find_by :name => 'david', :age => 44
     assert_equal 2, @users.count
   end
 
-  def test_composite_OR_find
-    @users = User.find_by({:name => 'luke', :age => 44}, :composite => "OR")
+  def test_find_by_conjunction_OR
+    @users = User.find_by({:name => 'luke', :age => 44}, :conjunction => "OR")
     assert_equal 6, @users.count
   end
 

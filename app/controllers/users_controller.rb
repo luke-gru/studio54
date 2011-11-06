@@ -13,7 +13,7 @@ class UsersController < LazyController
   end
 
   def find_by
-    @user = User.find_by({:name => "andrew", :id => 5}, :composite => 'OR')
+    @user = User.find_by({:name => "andrew", :id => 5}, :conjunction => 'OR')
   end
 
   def new

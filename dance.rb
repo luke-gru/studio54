@@ -58,13 +58,16 @@ class Studio54::Dancefloor
   end
 
   post '/email/send' do
-    Pony.mail :to =>  'luke.gru@gmail.com',
+    # set ENV['PASS'] to your gmail password
+    to = 'luke.gru@gmail.com'
+    from = to
+    Pony.mail :to =>  to,
               :via => :smtp,
       :via_options => {
         :address => 'smtp.gmail.com',
         :port => '587',
         :enable_starttls_auto => true,
-        :user_name => 'luke.gru@gmail.com',
+        :user_name => from,
         :password => ENV['PASS'],
         :authentication => :plain,
         :domain =>  "localhost.localdomain",
