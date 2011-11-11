@@ -1,0 +1,68 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    activemodel (3.0.0)
+      activesupport (= 3.0.0)
+      builder (~> 2.1.2)
+      i18n (~> 0.4.1)
+    activesupport (3.0.0)
+    builder (2.1.2)
+    daemons (1.1.4)
+    dbd-mysql (0.4.4)
+      dbi (>= 0.4.0)
+      mysql
+    dbi (0.4.5)
+      deprecated (= 2.0.1)
+    deprecated (2.0.1)
+    eventmachine (0.12.10)
+    i18n (0.4.2)
+    mail (2.3.0)
+      i18n (>= 0.4.0)
+      mime-types (~> 1.16)
+      treetop (~> 1.4.8)
+    mime-types (1.17.2)
+    mysql (2.8.1)
+    polyglot (0.3.2)
+    pony (1.3)
+      mail (> 2.0)
+    rack (1.3.4)
+    rack-cache (1.1)
+      rack (>= 0.4)
+    rack-flash (0.1.2)
+      rack
+    rack-protection (1.1.4)
+      rack
+    rack-test (0.6.1)
+      rack (>= 1.0)
+    shotgun (0.9)
+      rack (>= 1.0)
+    sinatra (1.3.1)
+      rack (~> 1.3, >= 1.3.4)
+      rack-protection (~> 1.1, >= 1.1.2)
+      tilt (~> 1.3, >= 1.3.3)
+    thin (1.2.11)
+      daemons (>= 1.0.9)
+      eventmachine (>= 0.12.6)
+      rack (>= 1.0.0)
+    tilt (1.3.3)
+    treetop (1.4.10)
+      polyglot
+      polyglot (>= 0.3.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  activemodel
+  activesupport
+  builder
+  dbd-mysql
+  dbi
+  pony
+  rack
+  rack-cache
+  rack-flash
+  rack-test
+  shotgun
+  sinatra
+  thin

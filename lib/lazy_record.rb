@@ -36,15 +36,17 @@ class LazyRecord < Studio54::Base
     self.__send__ :attr_accessor, *fields
   end
 
+  class << self
+    alias join_tbl_attr_accessor tbl_attr_accessor
+  end
+
   def self.attributes
     @attributes ||= []
   end
 
   def self.all_attributes
-    @all_attributes ||= begin
-      attrs = @attributes.dup
-      attrs.unshift primary_key
-    end
+    attrs = attributes.dup
+    attrs.unshift primary_key
   end
 
   def self.nested_attributes
@@ -53,6 +55,26 @@ class LazyRecord < Studio54::Base
 
   def self.belongs_to_attributes
     @belongs_to_attributes ||= []
+  end
+
+  # create database timestamp accessors
+  def self.timestamps options={}
+    # timestamp columns in the database
+    cattr_accessor :timestamp_cols
+    if options[:default]
+        attr_accessor  :created_at
+        attr_accessor  :updated_at
+        self.timestamp_cols = { :create => :created_at, :update => :updated_at }
+    else
+      if update = options[:update]
+        attr_accessor update.intern
+        self.timestamp_cols = { :update => update.intern }
+      end
+      if create = options[:create]
+        attr_accessor create.intern
+        self.timestamp_cols = { :create => create.intern }
+      end
+    end
   end
 
   private
@@ -206,12 +228,17 @@ class LazyRecord < Studio54::Base
   end
 
   # update the current model instance in the database
-  def update_attributes(params, extra_where={})
+  def update(params, extra_where={})
+    update_timestamp = self.timestamp_cols[:update]
     values = []
     key = self.primary_key
     id = params.delete key
     if extra_where.blank?
       sql = "UPDATE #{self.class.table_name} SET "
+      if update_timestamp
+        sql += "#{update_timestamp} = ?, "
+        values << SQLTime.timestamp
+      end
       params.each do |k,v|
         sql += "#{k} = ?, "
         values << v
@@ -281,9 +308,9 @@ class LazyRecord < Studio54::Base
     __send__("#{tbl}=", __send__(tbl) + objs) unless objs.blank?
   end
 
-  def self.db_try
+  def self.db_try &block
     begin
-      yield
+      block.call
     rescue DBI::DatabaseError
       @retries ||= 0; @retries += 1
       if @retries == 1
@@ -293,6 +320,10 @@ class LazyRecord < Studio54::Base
         raise
       end
     end
+  end
+
+  def db_try &block
+    self.class.db_try &block
   end
 
   # id is the primary key of the table, and does
@@ -329,7 +360,7 @@ class LazyRecord < Studio54::Base
     db_try do
       res = Db.conn.execute sql, *values
     end
-    build_from res
+    build_from res, :always_return_array => true
   end
 
   def self.all
@@ -357,6 +388,11 @@ class LazyRecord < Studio54::Base
     end
     model_instances.length == 1 && !opts[:always_return_array] ?
       model_instances[0] : model_instances
+  end
+
+  # convenience method
+  def build_from(resultset, options={})
+    self.class.build_from(resultset, options)
   end
 
   # meant for internal use
