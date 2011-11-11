@@ -23,7 +23,7 @@ class LazyRecord < Studio54::Base
   # parameters
   def initialize(params=nil)
     unless params.nil?
-      self.build_from_params!(params)
+      build_from_params!(params)
     end
     @errors = ActiveModel::Errors.new(self)
   end
@@ -33,11 +33,11 @@ class LazyRecord < Studio54::Base
     fields.each do |f|
       self.attributes << f.to_s unless self.attributes.include? f.to_s
     end
-    self.__send__ :attr_accessor, *fields
+    attr_accessor *fields
   end
 
   class << self
-    alias join_tbl_attr_accessor tbl_attr_accessor
+    alias_method :join_tbl_attr_accessor, :tbl_attr_accessor
   end
 
   def self.attributes
@@ -144,7 +144,7 @@ class LazyRecord < Studio54::Base
     end
   end
 
-  def self.attr_primary(*fields)
+  def self.attr_primary *fields
     if fields.length == 1
       self.primary_key = fields[0].to_s != "" ? fields[0].to_s : nil
     else
@@ -157,10 +157,10 @@ class LazyRecord < Studio54::Base
     end
   end
 
-  # associated table name, by default is just to add an 's' to the model
-  # name
+  # Associated table name, by default is the same as rails.
+  # It just uses the Inflector ActiveSupport::Inflections Inflector :tableize
   def self.assoc_table_name=( tblname=self.name.tableize )
-    self.__send__ :cattr_accessor, :table_name
+    cattr_accessor :table_name
     self.table_name = tblname.to_s
   end
 
@@ -169,7 +169,7 @@ class LazyRecord < Studio54::Base
   # meant for internal use
   def build_from_params!(params)
     params.each do |k, v|
-      self.__send__("#{k}=".intern, v)
+      __send__("#{k}=", v)
     end
   end
 
@@ -192,7 +192,7 @@ class LazyRecord < Studio54::Base
   # save current model instance into database
   def save
     return unless valid?
-    sql = "INSERT INTO #{self.class.table_name} ("
+    sql = "INSERT INTO #{self.table_name} ("
     fields = self.class.attributes
     sql += fields.join(', ') + ') VALUES ('
     fields.each {|f| sql += '?, '}
@@ -206,7 +206,7 @@ class LazyRecord < Studio54::Base
       end
     end
     result = nil
-    self.class.db_try do
+    db_try do
       result = Db.conn.execute sql, *values
     end
     result ? true : false
@@ -216,10 +216,10 @@ class LazyRecord < Studio54::Base
   def destroy(options={})
     if options[:where]
     else
-      sql = "DELETE FROM #{self.class.table_name} WHERE " \
+      sql = "DELETE FROM #{self.table_name} WHERE " \
             "#{self.primary_key} = ?"
       result = nil
-      self.class.db_try do
+      db_try do
         result = Db.conn.execute sql,
           instance_variable_get("@#{self.primary_key}")
       end
@@ -234,7 +234,7 @@ class LazyRecord < Studio54::Base
     key = self.primary_key
     id = params.delete key
     if extra_where.blank?
-      sql = "UPDATE #{self.class.table_name} SET "
+      sql = "UPDATE #{self.table_name} SET "
       if update_timestamp
         sql += "#{update_timestamp} = ?, "
         values << SQLTime.timestamp
@@ -249,7 +249,7 @@ class LazyRecord < Studio54::Base
     else
     end
     res = nil
-    self.class.db_try do
+    db_try do
       res = Db.conn.execute sql, *values
     end
     res
@@ -272,7 +272,7 @@ class LazyRecord < Studio54::Base
   #
   # To override the defaults, provide options to Model::has_many()
   def build_associated tbl
-    self_tbl = self.class.table_name
+    self_tbl = self.table_name
     through = if _through = self.class.
              instance_variable_get("@join_tables")[tbl][:through]
       _through
@@ -292,7 +292,7 @@ class LazyRecord < Studio54::Base
     rescue NameError
       retry if require "app/models/#{tbl_model_name.downcase}"
     end
-    pk = self.class.primary_key
+    pk = self.primary_key
     sql =
       "SELECT * FROM #{tbl} INNER JOIN #{through} ON #{tbl}." \
       "#{tbl_model.primary_key} = #{through}.#{fk} WHERE #{through}." \
@@ -300,7 +300,7 @@ class LazyRecord < Studio54::Base
 
     id = __send__ pk
     res = nil
-    self.class.db_try do
+    db_try do
       res = Db.conn.execute sql, id
     end
     objs = tbl_model.build_from res
@@ -403,6 +403,13 @@ class LazyRecord < Studio54::Base
   end
 
   public
+
+  def method_missing(method, *args, &block)
+    if method =~ %r{table_name}
+      return self.class.__send__ :assoc_table_name=
+    end
+    super
+  end
 
   class << self
     def method_missing(method, *args, &block)
