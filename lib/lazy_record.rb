@@ -1,6 +1,6 @@
 class LazyRecord < Studio54::Base
   include ::Studio54
-  # ActiveModel::Callbacks Base.class_eval {includes ActiveSupport::Callbacks}
+  # ActiveModel::Callbacks Base.class_eval { includes ActiveSupport::Callbacks }
   extend  ActiveModel::Callbacks
   include ActiveModel::Serializers::JSON
   include ActiveModel::Serializers::Xml
@@ -31,22 +31,34 @@ class LazyRecord < Studio54::Base
   # used to keep track of all table attributes
   def self.tbl_attr_accessor *fields
     fields.each do |f|
-      self.attributes << f.to_s unless self.attributes.include? f.to_s
+      self.attributes << f.to_s
     end
     attr_accessor *fields
   end
 
-  class << self
-    alias_method :join_tbl_attr_accessor, :tbl_attr_accessor
+  # used to keep track of all attributes that aren't
+  # directly related to this model, but another model
+  def self.join_tbl_attr_accessor *fields
+    fields.each do |f|
+      self.join_attributes << f.to_s
+    end
+    attr_accessor *fields
   end
 
   def self.attributes
     @attributes ||= []
   end
 
+  def self.join_attributes
+    @join_attributes ||= []
+  end
+
   def self.all_attributes
-    attrs = attributes.dup
-    attrs.unshift primary_key
+    if Array === primary_key
+      primary_key + attributes
+    else
+      [primary_key] + attributes
+    end
   end
 
   def self.nested_attributes
@@ -115,7 +127,6 @@ class LazyRecord < Studio54::Base
     model_string = model.to_s.singularize
     self.require_model model_string
     model_klass = Object.const_get model_string.camelize
-    ivar_name = model
 
     # Make sure associated model #belongs_to this class.
     unless model_klass.belongs_to_attributes.include? self.name.
@@ -124,11 +135,11 @@ class LazyRecord < Studio54::Base
         "#{self.name}"
     end
     class_eval do
-      define_method ivar_name do
-        instance_variable_get("@#{ivar_name}") || []
+      define_method model do
+        instance_variable_get("@#{model}") || []
       end
-      attr_writer ivar_name
-      self.nested_attributes << ivar_name
+      attr_writer model
+      self.nested_attributes << model.to_s
     end
   end
 
@@ -159,7 +170,7 @@ class LazyRecord < Studio54::Base
 
   # Associated table name, by default is the same as rails.
   # It just uses the Inflector ActiveSupport::Inflections Inflector :tableize
-  def self.assoc_table_name=( tblname=self.name.tableize )
+  def self.associated_tbl_name(tblname=self.name.tableize)
     cattr_accessor :table_name
     self.table_name = tblname.to_s
   end
@@ -194,8 +205,8 @@ class LazyRecord < Studio54::Base
     return unless valid?
     sql = "INSERT INTO #{self.table_name} ("
     fields = self.class.attributes
-    sql += fields.join(', ') + ') VALUES ('
-    fields.each {|f| sql += '?, '}
+    sql << fields.join(', ') + ') VALUES ('
+    fields.each {|f| sql << '?, '}
     sql = sql[0...-2] + ')'
     values = fields.map do |f|
       ivar = instance_variable_get "@#{f}"
@@ -213,7 +224,7 @@ class LazyRecord < Studio54::Base
   end
 
   # delete the current model instance from the database
-  def destroy(options={})
+  def delete(options={})
     if options[:where]
     else
       sql = "DELETE FROM #{self.table_name} WHERE " \
@@ -226,6 +237,7 @@ class LazyRecord < Studio54::Base
       result
     end
   end
+  alias destroy delete
 
   # update the current model instance in the database
   def update(params, extra_where={})
@@ -233,18 +245,19 @@ class LazyRecord < Studio54::Base
     values = []
     key = self.primary_key
     id = params.delete key
+    sql = ""
     if extra_where.blank?
-      sql = "UPDATE #{self.table_name} SET "
+      sql << "UPDATE #{self.table_name} SET "
       if update_timestamp
-        sql += "#{update_timestamp} = ?, "
+        sql << "#{update_timestamp} = ?, "
         values << SQLTime.timestamp
       end
       params.each do |k,v|
-        sql += "#{k} = ?, "
+        sql << "#{k} = ?, "
         values << v
       end
       sql = sql[0...-2]
-      sql += " WHERE #{key} = ?"
+      sql << " WHERE #{key} = ?"
       values << id
     else
     end
@@ -345,7 +358,7 @@ class LazyRecord < Studio54::Base
     sql = "SELECT * FROM #{self.table_name} WHERE "
     values = []
     hash.each do |k, v|
-      sql += "#{k} = ? #{conj} "
+      sql << "#{k} = ? #{conj} "
       values << v
     end
     case conj
@@ -406,7 +419,7 @@ class LazyRecord < Studio54::Base
 
   def method_missing(method, *args, &block)
     if method =~ %r{table_name}
-      return self.class.__send__ :assoc_table_name=
+      return self.class.__send__ :associated_tbl_name
     end
     super
   end
@@ -419,7 +432,7 @@ class LazyRecord < Studio54::Base
       end
 
       if method =~ %r{table_name}
-        return __send__ :assoc_table_name=
+        return __send__ :associated_tbl_name
       end
 
       super

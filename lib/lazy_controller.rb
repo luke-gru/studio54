@@ -56,7 +56,7 @@ RUBY
 
     def controller(c_name, c_action, params={})
       require File.join(CONTROLLERSDIR, "#{c_name}_controller")
-      require File.join(MODELSDIR, c_name[0...-1])
+      require File.join(MODELSDIR, c_name.to_s.singularize)
       begin
         controller = self.class.const_get("#{c_name.capitalize}Controller")
         controller_inst = controller.new
